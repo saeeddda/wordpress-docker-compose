@@ -1,0 +1,52 @@
+services:
+  wordpress:
+    image: wordpress:php8.2
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: database
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpresspass
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - site_data:/var/www/html
+    networks:
+      - wordpress_net
+    depends_on:
+      - database
+  database:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpresspass
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - wordpress_net
+  pma:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: database
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - 8081:80
+    depends_on:
+      - database
+    restart: always
+    networks:
+      - wordpress_net
+
+volumes:
+  site_data:
+  mysql_data:
+
+networks:
+  wordpress_net:
+    driver: bridge
